@@ -36,10 +36,10 @@ def GetTargetHeaderInfo(file):
     file.write( subprocess.getoutput('curl -s -o /dev/null ' + hostAddress + " -D/dev/stdout"))
 
 def DNSReconInformation(file):
-    # dnsrecon -d mymachine.vulnbegin.co.uk -D ./subdomains.txt -t std --xml dnsrecon.xml --lifetime 5.0
     print("Gathering DNS Recon information")
     file.write("==== DNSRECON INF === \n\n")
-    file.write( subprocess.getoutput( 'dnsrecon -d '+ hostAddress + ' -D ~/wordlists/subdomains.txt -t std --lifetime 5.0'))
+    file.write( subprocess.getoutput( 'dnsrecon -d '+ hostAddress + ' -t std --lifetime 5.0'))
+    file.write( subprocess.getoutput( 'dnsrecon -d '+ hostAddress[hostAddress.index(".")+1:] + ' -t std --lifetime 5.0'))
 
 def FuzzOneDimensionSubdomains(file):
     print("Finding Subdomains at One Level");
@@ -58,14 +58,21 @@ def FuzzOneDimensionSubdomains(file):
 def CertificationIdentity(file):
     print("Finding Certification Identities")
     file.write("==== ID CERTIFIC ==== \n\n")
-    lines = subprocess.getoutput('curl -s https://crt.sh/?q=' + hostAddress).splitlines()
 
-    result = ""
+    hostAddresses = [
+            hostAddress,
+            hostAddress[hostAddress.index('.')+1:]
+            ]
 
-    for line in lines[140:]:
-        result += line+"\n"
+    for address in hostAddresses:
+        lines = subprocess.getoutput('curl -s https://crt.sh/?q=' + address).splitlines()
+
+        result = ""
+
+        for line in lines[140:]:
+            result += line+"\n"
     
-    file.write(result)
+        file.write(result)
     
 def FuzzOneDimensionPath(file):
     print("Finding Path Addresses 1 Level");
