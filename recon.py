@@ -6,6 +6,11 @@ if len(sys.argv) < 1:
     print("Put the domain after script name")
     exit()
 
+header = ""
+
+if len(sys.argv) > 1:
+    header = sys.argv[2]
+
 hostAddress = sys.argv[1]
 fileData = "recon.txt"
 appendFile= open(r"" + fileData, "a")
@@ -28,12 +33,12 @@ def CurlRobots(file):
     file.write("==== FIND ROBOTS ==== \n\n")
     
     for protocol in protocols:
-        file.write( subprocess.getoutput('curl ' + protocol + "://www." + hostAddress + "/robots.txt"))
+        file.write( subprocess.getoutput('curl ' + protocol + '://www.' + hostAddress + '/robots.txt -H "'+header+'"'))
 
 def GetTargetHeaderInfo(file):
     print("Gathering Target Header request information")
     file.write("==== HEADER INFO ==== \n\n")
-    file.write( subprocess.getoutput('curl -s -o /dev/null ' + hostAddress + " -D/dev/stdout"))
+    file.write( subprocess.getoutput('curl -s -o /dev/null ' + hostAddress + ' -H "'+header+'" -D/dev/stdout'))
 
 def DNSReconInformation(file):
     print("Gathering DNS Recon information")
@@ -46,7 +51,7 @@ def FuzzOneDimensionSubdomains(file):
     file.write("==== FUZZ DOMAIN ==== \n\n")
     
     for protocol in protocols:
-        lines = subprocess.getoutput('ffuf -w ~/wordlists/subdomains.txt -H "Host: FUZZ.' + hostAddress + '" -u ' + protocol + "://www."+hostAddress).splitlines()
+        lines = subprocess.getoutput('ffuf -w ~/wordlists/subdomains.txt -H "'+header+'" -u ' + protocol + "://FUZZ."+hostAddress).splitlines()
         
         result = ''
         for line in lines:
@@ -79,7 +84,7 @@ def FuzzOneDimensionPath(file):
     file.write("==== FUZZ   PATH ==== \n\n")
     
     for protocol in protocols:
-        lines = subprocess.getoutput('ffuf -w ~/wordlists/content.txt -u ' + protocol + "://www."+hostAddress+"/FUZZ").splitlines()
+        lines = subprocess.getoutput('ffuf -w ~/wordlists/content.txt -H "'+header+'" -u ' + protocol + "://www."+hostAddress+"/FUZZ").splitlines()
         
         result = ''
         for line in lines:
